@@ -1,0 +1,199 @@
+\documentclass[letter]{amsart}
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\def\doubleunderline#1{\underline{\underline{#1}}}
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+\usepackage{titlesec}
+\usepackage{textcomp}
+\titleformat{\subsection}[frame]
+{\normalfont} {} {2pt} {\normalsize\bfseries\filright\thesubsection.\quad}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{enumerate}
+\usepackage{amsmath,amsfonts, amssymb}
+\usepackage{graphicx}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,arrows}
+\usepackage[margin=1in]{geometry}
+\titleformat {\section}
+    {\normalfont \Large \bfseries \centering}{\thesection}{1em}{}
+\usepackage{enumitem}
+\usepackage{mathrsfs}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage[fontsize=12pt]{scrextend}
+\restylefloat{table}
+\usepackage{mathtools}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\newcommand{\rr}{\mathbb{R}}
+\newcommand{\nn}{\mathbb{N}}
+\newcommand{\qq}{\mathbb{Q}}
+\newcommand{\dd}{$D$ }
+\newcommand{\intt}{int \text{ }}
+\newcommand{\bd}{bd \text{ }}
+\newcommand{\nbd}{nbd \text{ }}
+\newcommand{\cl}{cl \text{ }}
+\newcommand{\me}{\mathrm{e}}
+\newcommand\mypound{\protect\scalebox{0.8}{\protect\raisebox{0.4ex}{\#}}}
+\usepackage{listings} % for code listings
+\definecolor{UMassMaroon}{RGB}{136,28,28}
+\setcounter{MaxMatrixCols}{20}
+
+\newcommand{\Class}{CS589}
+\newcommand{\HomeworkNumber}{3}
+\newcommand{\StudentName}{Hai Nguyen}
+\newcommand{\StudentIDNumber}{32610558}
+\graphicspath{ {./figures/} }
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% DO NOT CHANGE HERE
+%%%%%%%%%%%%%%%%%%%%%%%%
+\title[\Class $\mid$ Homework \mypound$\HomeworkNumber$]{\Class \\ Homework \mypound$\HomeworkNumber$}
+\author[\StudentName]{\StudentName \\ \StudentIDNumber}
+
+\begin{document}
+\maketitle
+
+\newpage
+bootstrap implementation (parameters: training dataset)
+
+\begin{lstlisting}[language=Python]
+def bootstrapping(dataset):
+    bootstrap = []
+    for i in range(len(dataset)):
+        rand = random.randint(0, len(dataset) - 1)
+        bootstrap.append(dataset[rand])
+    return bootstrap
+\end{lstlisting}
+\\~\\
+Stratified K fold implementation (parameters: original dataset, number of folds)
+\begin{lstlisting}[language=Python]
+def createClassFreq(dataset):
+    classfreq = {}
+    for data in dataset:
+        if data[-1] in classfreq.keys():
+            classfreq[data[-1]].append(data)
+        else:
+            classfreq[data[-1]] = []
+            classfreq[data[-1]].append(data)
+    return classfreq
+
+def stratifiedKFold(dataset, k):
+    folds = []
+    occurrence = {}
+    classfreq = createClassFreq(dataset)
+    #create k fold
+    for i in range(k):
+        folds.append([])
+    #stratifying
+    for key, value in classfreq.items():
+        random.shuffle(classfreq[key])
+        occurrence[key] = round(len(classfreq[key]) / k)
+        num = 0
+        for i in range(k):
+            if(i == k - 1):
+                folds[i] += classfreq[key][num:]
+            else:
+                folds[i] += classfreq[key][num: num + occurrence[key]]
+                num += occurrence[key]
+    return folds
+\end{lstlisting}
+
+
+\newpage
+\section{The Wine Dataset}
+I've chosen the stopping criterion to be stopping if the tree depth is equal to half the attribute.\\
+\includegraphics[scale=.4]{wine/accuracy}
+I would choose ntree = 30 because it's value with the highest accuracy $(~97\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{wine/precision}
+I would choose ntree = 30 because it's value with the highest precision $(~97\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{wine/recall}
+I would choose ntree = 30 because it's value with the highest recall $(~97\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{wine/f1}
+I would choose ntree = 30 because it's value with the highest f1 score $(~97\%)$, with the lowest number of tree needed(20)\\
+
+\newpage
+\section{The 1984 United States Congressional Voting Dataset}
+I've chosen the stopping criterion to be, if the tree depth is stopping if the tree depth is equal to half the attribute.\\
+\includegraphics[scale=.4]{houseVote/accuracy}
+I would choose ntree = 20 because it's value with the highest accuracy $(~96\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{houseVote/precision}
+I would choose ntree = 20 because it's value with the highest precision $(~96\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{houseVote/recall}
+I would choose ntree = 20 because it's value with the highest recall $(~96\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{houseVote/f1}
+I would choose ntree = 20 because it's value with the highest f1 score $(~96\%)$, with the lowest number of tree needed(20)\\
+
+
+Since the Decision tree is increasing the number of guesses that are correct by lowering the variance,
+the accuracy, precision and recall increases significantly since the probability that the majority vote is correct is higher.\\
+The accuracy, precision and recall is less sensitive at ntree $>$ 10, since the difference between the variance halving is less than
+the difference between the variance going from 1/10 to 1/11. This is also because the variance is already at its minimum.\\
+The F1 score is a harder metrics to optimize since it requires both a high precision and high recall. This means that even if the data is skewed,
+the accuracy of the dataset might be high, but if the classifier is wrong, precision or recall will be off, and F1 will be low.\\
+There is a point beyond which adding more trees does not improve performance. This is because we're decreasing the variance, and once the variance is low enough, adding more tree will only yield insignificant increases in accuracy.\\
+There is no point where adding more tree gives a worse performance if the accuracy of each tree is at least $50\%$.
+This is because we're leveraging the law of large number, and because the each tree's accuracy is above $50\%$, through linearity of variance, and linearity of mean,
+The expected number of tree being correct will be largert than $50\%$ with a low variance.\\
+
+
+\newpage
+\section{The Wine Dataset with the Gini Index}
+
+I've chosen the stopping criterion to be, if the tree depth is stopping if the tree depth is equal to half the attribute.\\
+\includegraphics[scale=.4]{wine/accuracygini}
+I would choose ntree = 30 because it's value with the highest accuracy $(~97.5\%)$\\
+\includegraphics[scale=.4]{wine/precisiongini}
+I would choose ntree = 30 because it's value with the highest precision $(~97.5\%)$\\
+\includegraphics[scale=.4]{wine/recallgini}
+I would choose ntree = 30 because it's value with the highest recall $(~97.5\%)$\\
+\includegraphics[scale=.4]{wine/f1gini}
+I would choose ntree = 30 because it's value with the highest f1 score $(~97.5\%)$\\
+
+I think that accuracy, precision, recall, f1 score has increases slightly, but not significant. $(.5\%)$
+I think this is because both the information gained and gini criteria both are equally good at choosing the best criteria to split on.\\
+
+\newpage
+\section{The 1984 United States Congressional Voting Dataset with the Gini Index}
+I've chosen the stopping criterion to be, if the tree depth is stopping if the tree depth is equal to half the attribute.\\
+\includegraphics[scale=.4]{houseVote/accuracygini}
+I would choose ntree = 20 because it's value with the highest accuracy $(~95.5\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{houseVote/precisiongini}
+I would choose ntree = 20 because it's value with the highest precision $(~95.5\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{houseVote/recallgini}
+I would choose ntree = 20 because it's value with the highest recall $(~95.5\%)$, with the lowest number of tree needed(20)\\
+\includegraphics[scale=.4]{houseVote/f1gini}
+I would choose ntree = 20 because it's value with the highest f1 score $(~95.5\%)$, with the lowest number of tree needed(20)\\
+
+Accuracy, precision, recall, f1 score has decreases slightly, but not significant. $(.5\%)$\\
+I think this is because both the information gained and gini criteria both are equally good at choosing the best criteria to split on.\\
+
+\newpage
+\section{The Breast Cancer Dataset}
+I've chosen the stopping criterion to be, if the tree depth is stopping if the tree depth is equal to half the attribute.\\
+\includegraphics[scale=.4]{cancer/accuracy}
+I would choose ntree = 30 because it's value with the highest accuracy $(~97\%)$\\
+\includegraphics[scale=.4]{cancer/precision}
+I would choose ntree = 30 because it's value with the highest precision $(~97\%)$\\
+\includegraphics[scale=.4]{cancer/recall}
+I would choose ntree = 30 because it's value with the highest recall $(~97\%)$\\
+\includegraphics[scale=.4]{cancer/f1}
+I would choose ntree = 30 because it's value with the highest f1 score $(~97\%)$\\
+
+\newpage
+\section{the Contraceptive Method Choice Dataset}
+I've chosen the stopping criterion to be, if the tree depth is stopping if the tree depth is equal to half the attribute.\\
+\includegraphics[scale=.4]{contraceptive/accuracy}
+I would choose ntree = 40 because it's value with the highest accuracy $(~54\%)$\\
+\includegraphics[scale=.4]{contraceptive/precision}
+I would choose ntree = 40 because it's value with the highest precision $(~54\%)$\\
+\includegraphics[scale=.4]{contraceptive/recall}
+I would choose ntree = 40 because it's value with the highest recall $(~54\%)$\\
+\includegraphics[scale=.4]{contraceptive/f1}
+I would choose ntree = 40 because it's value with the highest f1 score $(~54\%)$\\
+
+\end{document}
